@@ -8,26 +8,35 @@ function App() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showHowItWorks, setShowHowItWorks] = useState(false);
 
   const handleOptimize = async () => {
     // Validate inputs
     if (!capacity || isNaN(capacity) || parseInt(capacity) <= 0) {
-      setError('Please enter a valid capacity');
+      setError('Please enter a valid positive capacity');
       return;
     }
 
     const validItems = items.filter(
-      (item) => item.profit !== '' && item.weight !== '' && !isNaN(item.profit) && !isNaN(item.weight)
+      (item) => item.profit !== '' && item.weight !== '' && !isNaN(item.profit) && !isNaN(item.weight) && parseInt(item.profit) > 0 && parseInt(item.weight) > 0
     );
 
     if (validItems.length === 0) {
-      setError('Please enter at least one valid item');
+      setError('Please enter at least one valid item with positive profit and weight');
+      return;
+    }
+
+    if (validItems.length !== items.length) {
+      setError('Please ensure all entered items have valid positive numbers');
       return;
     }
 
     setError('');
     setLoading(true);
     setResult(null);
+
+    // Artificial delay for better UX
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
     try {
       const payload = {
@@ -61,13 +70,38 @@ function App() {
     }
   };
 
+  const loadSampleData = () => {
+    setCapacity('20');
+    setItems([
+      { profit: '100', weight: '10' },
+      { profit: '120', weight: '8' },
+      { profit: '60', weight: '5' }
+    ]);
+    setResult(null);
+    setError('');
+  };
+
+  const handleReset = () => {
+    setCapacity('');
+    setItems([{ profit: '', weight: '' }]);
+    setResult(null);
+    setError('');
+  };
+
   return (
     <div className="app-container">
-      <div className="glass-card">
+      <div className="glass-card fade-in">
         <h1>SmartPack</h1>
-        <p style={{ textAlign: 'center', marginBottom: '2rem', color: 'var(--text-secondary)' }}>
-          Knapsack Optimizer
-        </p>
+        <p className="subtitle">Knapsack Optimization Tool</p>
+
+        <div className="button-group">
+          <button className="btn btn-secondary" onClick={loadSampleData}>
+            Load Demo Data
+          </button>
+          <button className="btn btn-secondary" onClick={handleReset}>
+            Reset
+          </button>
+        </div>
 
         <InputSection
           items={items}
@@ -76,13 +110,37 @@ function App() {
           setCapacity={setCapacity}
           onOptimize={handleOptimize}
           loading={loading}
+          result={result}
         />
 
-        {error && <div style={{ color: 'var(--danger)', marginTop: '1rem', textAlign: 'center' }}>{error}</div>}
+        {error && <div className="fade-in" style={{ color: 'var(--danger)', marginTop: '1.5rem', textAlign: 'center', background: 'rgba(239, 68, 68, 0.1)', padding: '0.8rem', borderRadius: '8px', border: '1px solid rgba(239, 68, 68, 0.3)' }}>{error}</div>}
       </div>
 
-      <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-        <OutputSection result={result} loading={loading} />
+      <div className="glass-card fade-in" style={{ display: 'flex', flexDirection: 'column', animationDelay: '0.2s' }}>
+        <OutputSection result={result} loading={loading} items={items} capacity={capacity} />
+
+        <div className="how-it-works">
+          <div className="how-it-works-header" onClick={() => setShowHowItWorks(!showHowItWorks)}>
+            <h3 style={{ margin: 0, fontSize: '1.1rem' }}>How the Algorithm Works</h3>
+            <span>{showHowItWorks ? '▼' : '▶'}</span>
+          </div>
+          
+          {showHowItWorks && (
+            <div className="how-it-works-content fade-in">
+              <ol>
+                <li><strong>Step 1:</strong> Each item has weight and profit.</li>
+                <li><strong>Step 2:</strong> We decide whether to include or exclude each item.</li>
+                <li><strong>Step 3:</strong> Recursively compute all possibilities.</li>
+                <li><strong>Step 4:</strong> Choose the combination with maximum profit.</li>
+              </ol>
+              <p><em>This implementation uses recursion to explore all possible subsets.</em></p>
+            </div>
+          )}
+        </div>
+      </div>
+      
+      <div style={{ gridColumn: '1 / -1' }}>
+        <p className="footer">Built using C (Knapsack Algorithm) + Modern Web UI</p>
       </div>
     </div>
   );
