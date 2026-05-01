@@ -46,17 +46,15 @@ export default function handler(req, res) {
     const max_profit = dp[n][capacity];
     const selected_items = [];
     
-    let res = max_profit;
+    let rem_profit = max_profit;
     let cur_w = capacity;
     
-    for (let i = n; i > 0 && res > 0; i--) {
-      if (res === dp[i - 1][cur_w]) {
+    for (let i = n; i > 0 && rem_profit > 0; i--) {
+      if (rem_profit === dp[i - 1][cur_w]) {
         continue;
       } else {
-        // We push i, but note that the order will be descending.
-        // It's usually fine, or we can unshift to keep ascending.
         selected_items.unshift(i);
-        res = res - p[i];
+        rem_profit = rem_profit - p[i];
         cur_w = cur_w - w[i];
       }
     }
