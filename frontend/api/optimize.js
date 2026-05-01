@@ -28,19 +28,43 @@ export default function handler(req, res) {
       w.push(item.weight);
     });
 
-    // The exact C recursive logic translated to JS
-    const knap = (i, m) => {
-      if (i === n) return w[i] > m ? 0 : p[i];
-      if (w[i] > m) return knap(i + 1, m);
-      return Math.max(knap(i + 1, m), knap(i + 1, m - w[i]) + p[i]);
-    };
+    // Dynamic Programming table
+    const dp = Array(n + 1).fill().map(() => Array(capacity + 1).fill(0));
+    
+    for (let i = 0; i <= n; i++) {
+      for (let j = 0; j <= capacity; j++) {
+        if (i === 0 || j === 0) {
+          dp[i][j] = 0;
+        } else if (w[i] <= j) {
+          dp[i][j] = Math.max(p[i] + dp[i - 1][j - w[i]], dp[i - 1][j]);
+        } else {
+          dp[i][j] = dp[i - 1][j];
+        }
+      }
+    }
 
-    const max_profit = knap(1, capacity);
+    const max_profit = dp[n][capacity];
+    const selected_items = [];
+    
+    let res = max_profit;
+    let cur_w = capacity;
+    
+    for (let i = n; i > 0 && res > 0; i--) {
+      if (res === dp[i - 1][cur_w]) {
+        continue;
+      } else {
+        // We push i, but note that the order will be descending.
+        // It's usually fine, or we can unshift to keep ascending.
+        selected_items.unshift(i);
+        res = res - p[i];
+        cur_w = cur_w - w[i];
+      }
+    }
 
     // Return the response matching the C output format
     res.status(200).json({
       max_profit,
-      selected_items: []
+      selected_items
     });
   } catch (error) {
     console.error('Optimization error:', error);
