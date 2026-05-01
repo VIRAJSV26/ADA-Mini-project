@@ -1,35 +1,12 @@
-#include<stdio.h>
+#include <stdio.h>
 
-// Array size 100 to prevent crashes
-int w[100], p[100], n;
-int current_selection[100];
-int best_selection[100];
-int max_profit = 0;
+int w[105], p[105], n;
+int dp[105][10005]; 
 
-void knap(int i, int m, int current_profit) {
-    if (i > n) {
-        if (current_profit > max_profit) {
-            max_profit = current_profit;
-            for(int j = 1; j <= n; j++) {
-                best_selection[j] = current_selection[j];
-            }
-        }
-        return;
-    }
-    
-    // Option 1: Exclude item i
-    current_selection[i] = 0;
-    knap(i + 1, m, current_profit);
-    
-    // Option 2: Include item i
-    if (w[i] <= m) {
-        current_selection[i] = 1;
-        knap(i + 1, m - w[i], current_profit + p[i]);
-    }
-}
+int max(int a, int b) { return (a > b) ? a : b; }
 
 int main() {
-    int m, i;
+    int m, i, j;
     
     // Read number of objects and capacity
     if (scanf("%d", &n) != 1) return 1;
@@ -39,13 +16,40 @@ int main() {
     for(i = 1; i <= n; i++)
         scanf("%d %d", &p[i], &w[i]);
         
-    knap(1, m, 0);
+    // DP logic
+    for (i = 0; i <= n; i++) {
+        for (j = 0; j <= m; j++) {
+            if (i == 0 || j == 0)
+                dp[i][j] = 0;
+            else if (w[i] <= j)
+                dp[i][j] = max(p[i] + dp[i-1][j - w[i]], dp[i-1][j]);
+            else
+                dp[i][j] = dp[i-1][j];
+        }
+    }
+    
+    int max_profit = dp[n][m];
+    
+    // Backtracking to find selected items
+    int selected[105] = {0};
+    int res = max_profit;
+    int cur_w = m;
+    
+    for (i = n; i > 0 && res > 0; i--) {
+        if (res == dp[i-1][cur_w]) {
+            continue;
+        } else {
+            selected[i] = 1;
+            res = res - p[i];
+            cur_w = cur_w - w[i];
+        }
+    }
     
     // Output JSON format
     printf("{\"max_profit\": %d, \"selected_items\": [", max_profit);
     int first = 1;
     for (i = 1; i <= n; i++) {
-        if (best_selection[i]) {
+        if (selected[i]) {
             if (!first) printf(", ");
             printf("%d", i);
             first = 0;

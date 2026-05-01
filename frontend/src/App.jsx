@@ -129,11 +129,11 @@ function App() {
             <div className="how-it-works-content fade-in">
               <ol>
                 <li><strong>Step 1:</strong> Each item has weight and profit.</li>
-                <li><strong>Step 2:</strong> We decide whether to include or exclude each item.</li>
-                <li><strong>Step 3:</strong> Recursively compute all possibilities.</li>
-                <li><strong>Step 4:</strong> Choose the combination with maximum profit.</li>
+                <li><strong>Step 2:</strong> Build a Dynamic Programming (DP) table.</li>
+                <li><strong>Step 3:</strong> Calculate the maximum profit for every capacity.</li>
+                <li><strong>Step 4:</strong> Backtrack through the table to identify selected items.</li>
               </ol>
-              <p><em>This implementation uses recursion to explore all possible subsets.</em></p>
+              <p><em>This implementation uses dynamic programming to efficiently solve the problem and trace back the optimal selection.</em></p>
             </div>
           )}
         </div>
